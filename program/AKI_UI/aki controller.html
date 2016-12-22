@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Kyohei Otsu">
+
+    <title>Aurora Rover Controller</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap-switch.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/portfolio-item.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+
+</head>
+
+<body>
+
+    <div id="header-container">
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Aurora</a>
+                </div>
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                        <li>
+                        <a href="#" onclick="alert('Aurora Rover Control Software (alpha)\nAuthor: Kyohei Otsu');">About</a>
+                        </li>
+                        <li>
+                        <a href="https://github.com/qqmoi/aurora">source</a>
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                        <img class="navbar-image" src="../static/img/jaxa_logo.png"/>
+                        </li>
+                        <li>
+                        <img class="navbar-image" src="../static/img/uoft_logo.png"/>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div id="main-container" class="container">
+        <div class="row">
+            <div id="column-head" class="col-lg-12">
+                <h1 class="page-header">Rover Controller
+                    <small>v1.03</small>
+                </h1>
+            </div>
+        </div> 
+
+        <div class="row">
+
+            <div id="column-map" class="col-lg-5">
+                <div id="map-container">
+                    <img id="map-snapshot" class="covered"/>
+                    <canvas id="canvas" class="covered"></canvas>
+<!--
+                    <img src="../static/img/compass.png" class="covered" style="transform: rotate(-120deg); margin: 10px 30px;"/>
+-->
+                </div>
+            </div>
+
+            <div id="column-camera" class="col-lg-4">
+                <div id="camera-container">
+                    <img id="camera-snapshot"></img>
+                </div>
+
+                <!-- Inclinometer -->
+                <div id="inclinometer-pane" title="Select map display mode">
+                    <div class="row">
+                        <br/>
+                        <div class="col-lg-1"></div>
+                        <div class="col-lg-5">
+                            <span>Pitch</span>
+                            <span id="global-pose-pitch" class="lead">3.14</span>
+                            <span>deg</span>
+                            <img id="img-pitch" src="../static/img/rover_pitch.png" class=""/>
+                        </div>
+                        <div class="col-lg-5">
+                            <span>Roll</span>
+                            <span id="global-pose-roll" class="lead">1.59</span>
+                            <span>deg</span>
+                            <img id="img-roll" src="../static/img/rover_roll.png" class=""/>
+                        </div>
+                        <div class="col-lg-1"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="column-tools" class="col-lg-3">
+                <!-- Alerts -->
+                <div id="alerts-container">
+                    <div id="alert-comm" class="alert alert-danger" role="alert" style="display: none;">ERROR! Communication not established</div>
+                    <div id="alert-path" class="alert alert-warning" role="alert" style="display: none;">WARNING! Path not found</div>
+                </div>
+
+                <!-- Inner Status -->
+                <div id="status-pane" title="Shows current rover state">
+                    <div class="sidebar-title"> Status </div>
+                    <div class="sidebar-item">
+                        <div>
+                            <span>North (Y) </span>
+                            <span id="global-position-north" class="lead">0.0</span>
+                            <span>m</span>
+                        </div>
+                        <div>
+                            <span>East (X) </span>
+                            <span id="global-position-east" class="lead">0.0</span>
+                            <span>m</span>
+                        </div>
+                        <div>
+                            <span>Heading</span>
+                            <span id="global-position-heading" class="lead">0.0</span>
+                            <span>deg</span>
+                        </div>
+                        <div>
+                            <span>Total Distance</span>
+                            <span id="global-distance" class="lead">0.0</span>
+                            <span>m</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div id="inner-status-pane" title="Shows current rover state">
+                    <div class="sidebar-title"> Status </div>
+                    <div class="sidebar-item">
+                        <div>
+                            <span>COM Battery</span>
+                            <span id="state-com-busv" class="lead">XX</span>
+                            <span>V</span>
+                        </div>
+                        <div>
+                            <span>MOB Battery</span>
+                            <span id="state-mob-busv" class="lead">YY</span>
+                            <span>V</span>
+                        </div>
+                        <div>
+                            <span>COM Power</span>
+                            <span id="state-com-power" class="lead">xx</span>
+                            <span>W</span>
+                        </div>
+                        <div>
+                            <span>MOB Power</span>
+                            <span id="state-mob-power" class="lead">yy</span>
+                            <span>W</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Waypoint -->
+                <div id="map-mode-selector" title="Select map display mode">
+                    <div class="sidebar-title"> Next Waypoint </div>
+                    <div class="sidebar-item">
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <label>X</label>
+                                <input type="number" class="form-control" id="goalX" placeholder="^" max="5" min="-5" size="25" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Y</label>
+                                <input type="number" class="form-control" id="goalY" placeholder="<" max="5" min="-5" size="25" step="0.01">
+                            </div>
+                            <button id="btn-set-goal" type="submit" class="btn btn-default">Set</button>
+                            <button id="btn-delete-goal" type="submit" class="btn btn-default">Delete</button>
+                        </form>
+                    </div>
+                </div>
+
+
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <hr/>
+
+            <div id="column-tools1" class="col-lg-3">
+
+                <!-- Map view mode -->
+                <div id="map-mode-selector" title="Select map display mode">
+                    <div class="sidebar-title"> Map view </div>
+                    <div class="sidebar-item">
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="map-mode" value="VISUAL" checked> Visual
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="map-mode" value="HAZARD"> Hazard
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="map-mode" value="ELEVATION"> Elevation
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Camera view mode -->
+                <div id="cam-mode-selector" title="Select camera display mode">
+                    <div class="sidebar-title"> Camera view </div>
+                    <div class="sidebar-item">
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="cam-mode" value="LEFT" checked> Left
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="cam-mode" value="RIGHT"> Right
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="cam-mode" value="DISPARITY"> Disparity
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="column-tools2" class="col-lg-3">
+
+                <!-- Initial pose -->
+                <div id="map-mode-selector" title="Reset rover pose">
+                    <div class="sidebar-title"> Pose Reset </div>
+                    <div class="sidebar-item">
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <LABEL>Longitude</label>
+                                <input type="text" class="form-control" id="goalX" placeholder="Forward">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail2">Latitude</label>
+                                <input type="text" class="form-control" id="goalY" placeholder="Left">
+                            </div>
+                            <div class="form-group">
+                                <label>Heading</label>
+                                <input type="text" class="form-control" id="goalX" placeholder="Forward">
+                                <p class="help-block">Leave blank to keep current</p>
+                            </div>
+                            <button type="submit" class="btn btn-default">Reset</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="column-tools3" class="col-lg-3">
+
+                <!-- msg pane -->
+                <div id="msg-pane" title="Log">
+                    <div class="sidebar-title"> Log </div>
+                    <div class="sidebar-item">
+                        <div id="notification">
+                        </div>
+                        <form class="form-inline">
+                            <button id="btn-download-log" type="submit" class="btn btn-default">Download</button>
+                        </form>
+                    </div>
+                </div>
+
+
+                <!-- Send direct command -->
+<!--
+                <div id="direct-command-pane" title="Send a command directly to the controller">
+                    <div class="sidebar-title"> Direct Command </div>
+                    <div class="sidebar-item">
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <label>Command</label>
+                                <input type="text" class="form-control" id="direct-command" placeholder="">
+                                <p class="help-block">
+                                d1 ... drive 1 meter <br/>
+                                f0 ... stop <br/>
+                                s5 ... front steering <br/>
+                                u5 ... all-wheel steering
+                                </p>
+                            </div>
+                            <button type="submit" class="btn btn-default">Send</button>
+                        </form>
+                    </div>
+                </div>
+-->
+
+                <!-- Path Upload -->
+<!--
+                <div id="drive-selector" title="Upload waypoints information as a KML file">
+                    <div class="sidebar-title"> Path Upload (kml)</div>
+                    <div class="sidebar-item">
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <input type="file" id="exampleInputFile">
+                            </div>
+                            <button type="submit" class="btn btn-default btn-xs">Upload</button>
+                        </form>
+                    </div>
+                </div>
+-->
+
+                <!-- Special command -->
+<!--
+                <div id="special-command-pane" title="Send special commands">
+                    <div class="sidebar-title"> Special Command </div>
+                    <div class="sidebar-item">
+                        <form class="form-inline">
+                            <label>Panorama Imaging </label>
+                            <button type="submit" class="btn btn-link btn-xs">Execute</button>
+                        </form>
+                    </div>
+                </div>
+-->
+            </div>
+
+            <div id="column-tools4" class="col-lg-3">
+
+                <!-- Program manager -->
+                <div id="program-manager-pane" title="Manage program">
+                    <div class="sidebar-title"> Manage Program </div>
+                    <div class="sidebar-item">
+                        <div class="program-manager-item">
+                            <input type="checkbox" name="adc-status" data-label-text="AD Cnv" data-label-width="80px" data-handle-width="80px" data-size="large">
+                        </div>
+                        <div class="program-manager-item">
+                            <input type="checkbox" name="vision-status" data-label-text="Vision" data-label-width="80px" data-handle-width="80px" data-size="large">
+                        </div>
+                        <div class="program-manager-item">
+                            <input type="checkbox" name="logger-status" data-label-text="Logger" data-label-width="80px" data-handle-width="80px" data-size="large">
+                        </div>
+                        <hr/>
+                        <div class="row program-manager-item">
+                            <input type="checkbox" name="drive-status" data-label-text="Drive" data-label-width="80px" data-handle-width="80px" data-size="large" data-off-color="danger">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div> 
+
+        <div class="row">
+            <hr>
+
+            <footer>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <small>
+                            <p>&copy; 2015 | Kyohei Otsu | ISAS/JAXA | The University of Tokyo </p>
+                        </small>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+    </div>
+
+    <script> 
+        function getBaseUrl() { return "/static/"; }
+    </script>
+
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/jquery.csv-0.71.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/bootstrap-switch.min.js"></script>
+    <script src="/static/js/main.js"></script>
+
+</body>
+
+</html>
