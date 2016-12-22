@@ -1,0 +1,207 @@
+    //encoder clear
+    for(i=0;i<2;i++){
+   	
+   	buf[0]=0x02;
+	if(i==0){
+		buf[1]=0x01;
+	}else{
+		buf[1]=0x02;
+	}
+    	buf[2]=0x01;
+    	buf[3]=0x15;
+       	UH_tmp=checksum(&buf[1],3);    
+    	buf[4]=ustoc1(UH_tmp);   
+    	buf[5]=0;
+ 
+ 	res=write(fd, buf, 6);     
+
+	for(j=0; j<5; j++)
+	   printf("%x ", buf[j]);
+	printf(": %d\n", res);
+
+
+       	res = read(fd, buf, DATA_MAX_SIZE);
+        printf("read \n");
+        buf[res]=0;
+
+	for(j=0; j<res; j++)
+	   printf("%x ", buf[j]);
+	printf(": %d\n", res);
+
+    }
+
+
+    //periodical response start
+    for(i=0;i<2;i++){
+   	
+   	buf[0]=0x02;
+	if(i==0){
+		buf[1]=0x01;
+	}else{
+		buf[1]=0x02;
+	}
+    	buf[2]=0x03;
+    	buf[3]=0x23;
+      	buf[4]=0x01;
+	buf[5]=0x01;
+       	UH_tmp=checksum(&buf[1],5);    
+    	buf[6]=ustoc1(UH_tmp);   
+    	buf[7]=0;
+ 
+ 	res=write(fd, buf, 8);     
+
+	for(j=0; j<7; j++)
+	   printf("%x ", buf[j]);
+	printf(": %d\n", res);
+
+
+       	res = read(fd, buf, DATA_MAX_SIZE);
+        printf("read \n");
+        buf[res]=0;
+
+	for(j=0; j<res; j++)
+	   printf("%x ", buf[j]);
+	printf(": %d\n", res);
+    }
+
+
+    printf(":\n\n");
+    
+    { int temp_speed=(int)DRV_SPEED;
+    while(temp_speed>-100){
+    
+    //make drive 
+    for(i=0;i<2;i++){
+   	
+   	buf[0]=0x02;
+	if(i==0){
+		buf[1]=0x01;
+	}else{
+		buf[1]=0x02;
+	}
+    	buf[2]=0x05;
+    	buf[3]=0x21;
+    	itoc4(temp_speed, &buf[4]);
+    	UH_tmp=checksum(&buf[1],7);    
+    	buf[8]=ustoc1(UH_tmp);   
+    	buf[9]=0;
+ 
+ 	res=write(fd, buf, 10);     
+
+	for(j=0; j<9; j++)
+	   printf("%x ", buf[j]);
+	printf(": %d\n", res);
+
+
+       	res = read(fd, buf, DATA_MAX_SIZE);
+        printf("read \n");
+        buf[res]=0;
+
+	for(j=0; j<res; j++)
+	   printf("%x ", buf[j]);
+	printf(": %d\n", res);
+
+   	printf(":\n");
+
+
+	//read control parameter
+  	buf[0]=0x02;
+	if(i==0){
+		buf[1]=0x01;
+	}else{
+		buf[1]=0x02;
+	}
+    	buf[2]=0x02;
+    	buf[3]=0x22;
+    	buf[4]=0x01;
+    	UH_tmp=checksum(&buf[1],4);    
+    	buf[5]=ustoc1(UH_tmp);   
+    	buf[6]=0;
+       
+        res=write(fd, buf, 7);
+
+       	res = read(fd, buf, DATA_MAX_SIZE);
+        printf("read \n");
+        buf[res]=0;
+
+	for(j=0; j<res; j++)
+	   printf("%x ", buf[j]);
+	printf(": %d\n", res);
+	
+	if(res>3){
+		if(c2tous(&buf[5])<32768){
+			printf("Duty=%d\n",c2tous(&buf[5]));
+		}else{
+			printf("Duty=%d\n",c2tous(&buf[5])-65536);
+		}
+	}	
+
+    }
+
+	temp_speed--;
+
+    }//while
+    }//middle pa
+
+
+
+    printf(":\n\n");
+    
+    
+
+    //read line
+/*    for(i=0;i<1;i++){
+       	res = read(fd, buf, DATA_MAX_SIZE);
+        printf("read \n");
+        buf[res]=0;
+
+	for(j=0; j<res; j++)
+	   printf("%x ", buf[j]);
+	printf(": %d\n", res);
+
+	if(res>3){
+		if(buf[3]==3){
+			printf("Duty=%d\n",c2tous(&buf[4]));
+
+		}else if(buf[3]==4){
+
+			if(buf[4]==1){
+				printf("Duty=%d\n",c2tous(&buf[5]));
+			}else if(buf[4]==0){
+				printf("Duty=-%d\n",c2tous(&buf[5]));
+			}
+
+		}
+	}
+    }
+*/
+
+    //make stop
+    for(i=0;i<2;i++){ //double command
+
+    	buf[0]=0x02;
+	if(i==0){
+    		buf[1]=0x01;
+	}else{
+		buf[1]=0x02;
+	}
+    	buf[2]=0x02;
+    	buf[3]=0x20;
+    	buf[4]=0x00;
+    	UH_tmp=checksum(&buf[1],4);
+    	buf[5]=ustoc1(UH_tmp);
+    	buf[6]=0;
+
+   	res=write(fd, buf, 6);
+    
+       	res = read(fd, buf, DATA_MAX_SIZE);
+        printf("read \n");
+        buf[res]=0;
+
+	for(j=0; j<res; j++)
+	   printf("%x ", buf[j]);
+	printf(": %d\n", res);
+	
+    }
+
+    printf("control end \n");

@@ -1,0 +1,36 @@
+--足回り実行マニュアル．
+
+下準備：
+1. 192.168.201.xxxのIPアドレスを持つPCを準備
+2. telnet通信できるのであればOSは限定しない．
+
+
+手順：
+0. Linuxであれば，aki_exe.shを実行すれば終わり．
+1. Motor Controller(MC)へアクセス
+$telnet 192.168.201.11
+
+ID: guest
+password: guest
+
+2. ユーザ権限変更
+$ su
+
+password: peke
+
+3. 実行ディレクトリへ移動
+
+#cd /home/guest/rover
+
+4. ファイルを実行
+
+#./exe_main
+
+
+補足：
+たぶんいらないが手順2の後に以下を実行する必要あるかも．
+
+#chmod 777 /dev/mem
+#chmod 777 /dev/ttyS*
+#chmod 777 /dev/ttyUSB*
+"
